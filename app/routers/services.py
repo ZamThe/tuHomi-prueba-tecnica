@@ -1,16 +1,16 @@
-
-from datetime import datetime
-from pathlib import Path
-from uuid import uuid4
-import json
 from fastapi import (
     APIRouter,
     Depends,
     File,
+    Form,
     HTTPException,
     Request,
     UploadFile,
 )
+from datetime import datetime
+from pathlib import Path
+from uuid import uuid4
+import json
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session, selectinload
@@ -138,12 +138,13 @@ def show_alert(message: str):
         status_code=400,
     )
 
+
 @router.get("/servicio")
 def service_page(
     request: Request,
     db: Session = Depends(get_db),
 ):
-    """Muestra el servicio y el tiempo acumulado."""
+    """Muestra el servicio, el tiempo y el avance de las tareas."""
     user = get_current_user(request, db)
 
     if user is None:
@@ -153,6 +154,24 @@ def service_page(
 
     timer_seconds = get_elapsed_seconds(service) if service else 0
 
+    total_tasks = len(service.tasks) if service else 0
+
+    completed_tasks = (
+        sum(
+            1
+            for task in service.tasks
+            if task.is_completed and task.photo is not None
+        )
+        if service
+        else 0
+    )
+
+    progress_percentage = (
+        round((completed_tasks / total_tasks) * 100)
+        if total_tasks > 0
+        else 0
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="service.html",
@@ -160,8 +179,12 @@ def service_page(
             "user": user,
             "service": service,
             "timer_seconds": timer_seconds,
+            "total_tasks": total_tasks,
+            "completed_tasks": completed_tasks,
+            "progress_percentage": progress_percentage,
         },
     )
+
 
 
 @router.get("/servicio/fotografias/{photo_id}")
@@ -323,6 +346,7 @@ def resume_service(
     return RedirectResponse("/servicio", status_code=303)
 
 
+
 @router.post("/servicio/tareas/{task_id}/completar")
 async def complete_task(
     task_id: int,
@@ -330,7 +354,181 @@ async def complete_task(
     photo: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    """Guarda la fotografía y completa una tarea."""
+    """Completa una tarea o reemplaza su fotografía durante el servicio."""
+    user = get_current_user(request, db)
+
+    if user is None:
+        return RedirectResponse("/", status_code=303)
+
+    task = (
+        db.query(Task)
+        .join(Service, Task.service_id == Service.id)
+        .filter(
+            Task.id == task_id,
+            Service.user_id == user.id,
+        )
+        .first()
+    )
+
+    if task is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Tarea no encontrada.",
+        )
+
+    service = (
+        db.query(Service)
+        .filter(
+            Service.id == task.service_id,
+            Service.user_id == user.id,
+        )
+        .first()
+    )
+
+    if service is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Servicio no encontrado.",
+        )
+
+    # Solo se permiten cambios mientras el servicio está en progreso.
+    if service.status != "en progreso":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Solo puedes modificar tareas y fotografías "
+                "mientras el servicio está en progreso."
+            ),
+        )
+
+    content_type = (photo.content_type or "").lower()
+
+    if content_type not in ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail="Solo se permiten imágenes JPG o PNG.",
+        )
+
+    destination = None
+
+    try:
+        data = await photo.read(MAX_PHOTO_SIZE + 1)
+
+        if not data:
+            raise HTTPException(
+                status_code=400,
+                detail="El archivo está vacío.",
+            )
+
+        if len(data) > MAX_PHOTO_SIZE:
+            raise HTTPException(
+                status_code=413,
+                detail="La imagen supera el límite de 5 MB.",
+            )
+
+        if not valid_image_signature(content_type, data):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "El contenido no coincide con una imagen "
+                    "JPG o PNG válida."
+                ),
+            )
+
+        extension = ".jpg" if content_type == "image/jpeg" else ".png"
+        filename = f"{uuid4().hex}{extension}"
+        destination = PHOTO_DIR / filename
+
+        
+        existing_photo = (
+            db.query(Photo)
+            .filter(Photo.task_id == task.id)
+            .first()
+        )
+
+        old_path = (
+            Path(existing_photo.path).resolve()
+            if existing_photo and existing_photo.path
+            else None
+        )
+
+       
+        destination.write_bytes(data)
+
+        if existing_photo:
+            
+            existing_photo.filename = filename
+            existing_photo.content_type = content_type
+            existing_photo.size = len(data)
+            existing_photo.path = str(destination.resolve())
+            existing_photo.uploaded_at = datetime.utcnow()
+        else:
+            photo_record = Photo(
+                task_id=task.id,
+                filename=filename,
+                content_type=content_type,
+                size=len(data),
+                path=str(destination.resolve()),
+                uploaded_at=datetime.utcnow(),
+            )
+            db.add(photo_record)
+
+        task.is_completed = True
+        task.completed_at = datetime.utcnow()
+
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+
+     
+        if (
+            old_path
+            and old_path != destination.resolve()
+            and old_path.is_relative_to(PHOTO_DIR.resolve())
+        ):
+            try:
+                old_path.unlink(missing_ok=True)
+            except OSError:
+                # La evidencia nueva ya quedó guardada.
+                pass
+
+    except HTTPException:
+        if destination:
+            try:
+                destination.unlink(missing_ok=True)
+            except OSError:
+                pass
+        raise
+
+    except Exception:
+        db.rollback()
+
+        if destination:
+            try:
+                destination.unlink(missing_ok=True)
+            except OSError:
+                pass
+
+        raise HTTPException(
+            status_code=500,
+            detail="No fue posible guardar o actualizar la fotografía.",
+        )
+
+    finally:
+        await photo.close()
+
+    return RedirectResponse("/servicio", status_code=303)
+
+
+@router.post("/servicio/tareas/{task_id}/desmarcar")
+def uncheck_task(
+    task_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Devuelve una tarea al estado pendiente durante el servicio."""
     user = get_current_user(request, db)
 
     if user is None:
@@ -370,86 +568,17 @@ async def complete_task(
     if service.status != "en progreso":
         raise HTTPException(
             status_code=400,
-            detail="Debes tener el servicio en progreso para completar tareas.",
+            detail=(
+                "Solo puedes modificar el checklist "
+                "mientras el servicio está en progreso."
+            ),
         )
 
-    existing_photo = (
-        db.query(Photo).filter(Photo.task_id == task.id).first()
-    )
+    task.is_completed = False
+    task.completed_at = None
 
-    if task.is_completed or existing_photo is not None:
-        raise HTTPException(
-            status_code=400,
-            detail="Esta tarea ya fue completada.",
-        )
-
-    content_type = (photo.content_type or "").lower()
-
-    if content_type not in ALLOWED_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail="Solo se permiten imágenes JPG o PNG.",
-        )
-
-    try:
-        data = await photo.read(MAX_PHOTO_SIZE + 1)
-
-        if not data:
-            raise HTTPException(
-                status_code=400,
-                detail="El archivo está vacío.",
-            )
-
-        if len(data) > MAX_PHOTO_SIZE:
-            raise HTTPException(
-                status_code=413,
-                detail="La imagen supera el límite de 5 MB.",
-            )
-
-        if not valid_image_signature(content_type, data):
-            raise HTTPException(
-                status_code=400,
-                detail="El contenido no coincide con una imagen JPG o PNG válida.",
-            )
-
-        extension = ".jpg" if content_type == "image/jpeg" else ".png"
-        filename = f"{uuid4().hex}{extension}"
-        destination = PHOTO_DIR / filename
-
-        try:
-            destination.write_bytes(data)
-
-            photo_record = Photo(
-                task_id=task.id,
-                filename=filename,
-                content_type=content_type,
-                size=len(data),
-                path=str(destination.resolve()),
-                uploaded_at=datetime.utcnow(),
-            )
-
-            db.add(photo_record)
-
-            task.is_completed = True
-            task.completed_at = datetime.utcnow()
-
-            db.commit()
-
-        except Exception:
-            db.rollback()
-
-            try:
-                destination.unlink(missing_ok=True)
-            except OSError:
-                pass
-
-            raise HTTPException(
-                status_code=500,
-                detail="No fue posible guardar la fotografía.",
-            )
-
-    finally:
-        await photo.close()
+    # La fotografía se conserva para no perder la evidencia anterior.
+    db.commit()
 
     return RedirectResponse("/servicio", status_code=303)
 

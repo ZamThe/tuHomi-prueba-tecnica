@@ -7,7 +7,9 @@
     <title>TuHomi | Mi servicio</title>
 
     <style>
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
 
         body {
             margin: 0;
@@ -17,14 +19,18 @@
             background: #f4f7fb;
         }
 
-        .container { max-width: 850px; margin: auto; }
+        .container {
+            max-width: 850px;
+            margin: auto;
+        }
 
-        header, .panel {
+        header,
+        .panel {
             padding: 24px;
             margin-bottom: 20px;
             border-radius: 16px;
             background: white;
-            box-shadow: 0 6px 24px rgba(0,0,0,.06);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, .06);
         }
 
         header {
@@ -34,9 +40,19 @@
             gap: 16px;
         }
 
-        h1 { margin: 0; color: #168b78; }
-        h2 { margin-top: 0; }
-        .muted { color: #667085; line-height: 1.6; }
+        h1 {
+            margin: 0;
+            color: #168b78;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .muted {
+            color: #667085;
+            line-height: 1.6;
+        }
 
         .status {
             display: inline-block;
@@ -48,13 +64,6 @@
             font-weight: bold;
         }
 
-        .task {
-            padding: 18px 0;
-            border-bottom: 1px solid #e6eaf0;
-        }
-
-        .task:last-child { border-bottom: 0; }
-
         button {
             padding: 11px 16px;
             border: 0;
@@ -63,12 +72,42 @@
             background: #168b78;
             font-weight: bold;
             cursor: pointer;
+            transition: background .2s ease, transform .2s ease;
         }
 
-        button:disabled { opacity: .55; cursor: not-allowed; }
-        .secondary { background: #526078; }
-        .warning { background: #d97706; }
-        .success { color: #16745e; font-weight: bold; }
+        button:hover:not(:disabled) {
+            background: #117563;
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary {
+            background: #526078;
+        }
+
+        .secondary:hover:not(:disabled) {
+            background: #39465b;
+        }
+
+        .warning {
+            background: #d97706;
+        }
+
+        .warning:hover:not(:disabled) {
+            background: #b96505;
+        }
+
+        .success {
+            color: #16745e;
+            font-weight: bold;
+        }
+
+        /* Contador de tiempo */
 
         .timer-panel {
             text-align: center;
@@ -91,18 +130,114 @@
             gap: 10px;
         }
 
+        /* Barra de progreso */
+
+        .progress-panel {
+            margin-bottom: 24px;
+            padding: 20px;
+            border: 1px solid #dcefe9;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #f5fcf9, #ffffff);
+        }
+
+        .progress-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .progress-heading h3 {
+            margin: 0;
+            font-size: 17px;
+            color: #243047;
+        }
+
+        .progress-percentage {
+            color: #168b78;
+            font-size: 20px;
+            font-weight: 750;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 12px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e5ece9;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #168b78, #31b995);
+            transition: width .4s ease;
+        }
+
+        .progress-description {
+            margin: 12px 0 0;
+            color: #526078;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .progress-complete {
+            color: #16745e;
+            font-weight: 700;
+        }
+
+        /* Tarjetas de tareas */
+
         .task-card {
-            padding: 16px 0;
+            padding: 18px 0;
             border-bottom: 1px solid #e6eaf0;
         }
 
-        .task-card:last-child { border-bottom: 0; }
+        .task-card:last-child {
+            border-bottom: 0;
+        }
+
+        .task-card h3 {
+            margin-top: 0;
+            color: #243047;
+        }
+
+        .task-form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .task-form label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .task-form input[type="file"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            border: 1px solid #dce2ea;
+            border-radius: 9px;
+            background: #f9fafb;
+            color: #243047;
+        }
+
+        .photo-evidence {
+            margin-top: 14px;
+        }
 
         .photo-evidence img {
+            display: block;
             max-width: 100%;
             width: 320px;
             height: auto;
             border-radius: 12px;
+            border: 1px solid #e6eaf0;
         }
 
         .photo-name {
@@ -111,33 +246,85 @@
             overflow-wrap: anywhere;
         }
 
+        /* Finalización */
+
+        .finish-service {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e6eaf0;
+        }
+
+        .finish-service button {
+            width: 100%;
+        }
+
+        /* Adaptación a celulares */
+
         @media (max-width: 520px) {
-            body { padding: 12px; }
-            header { align-items: flex-start; flex-direction: column; }
-            header, .panel { padding: 18px; }
-            .timer-actions form, .timer-actions button { width: 100%; }
+            body {
+                padding: 12px;
+            }
+
+            header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            header,
+            .panel {
+                padding: 18px;
+            }
+
+            header form,
+            header form button {
+                width: 100%;
+            }
+
+            .timer-actions form,
+            .timer-actions button {
+                width: 100%;
+            }
+
+            .progress-panel {
+                padding: 15px;
+            }
+
+            .task-form button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
 <div class="container">
+
+    <!-- Encabezado -->
     <header>
         <div>
             <h1>TuHomi</h1>
-            <p class="muted">Bienvenido/a, {{ user.full_name }}</p>
+            <p class="muted">
+                Bienvenido/a, {{ user.full_name }}
+            </p>
         </div>
 
         <form action="/logout" method="post">
-            <button class="secondary" type="submit">Cerrar sesión</button>
+            <button class="secondary" type="submit">
+                Cerrar sesión
+            </button>
         </form>
     </header>
 
     {% if service %}
+
+    <!-- Información del servicio -->
     <section class="panel">
         <h2>Mi servicio de limpieza</h2>
 
-        <p><strong>Ubicación:</strong> {{ service.apartment }}</p>
+        <p>
+            <strong>Ubicación:</strong>
+            {{ service.apartment }}
+        </p>
 
         <p>
             <strong>Fecha:</strong>
@@ -155,16 +342,22 @@
         </p>
 
         {% if service.status == "pendiente" %}
-        <form action="/servicio/iniciar" method="post">
-            <button type="submit">Iniciar labores</button>
-        </form>
+            <form action="/servicio/iniciar" method="post">
+                <button type="submit">
+                    Iniciar labores
+                </button>
+            </form>
+
         {% elif service.status == "finalizado" %}
-        <p class="success">✓ Servicio finalizado correctamente.</p>
+            <p class="success">
+                ✓ Servicio finalizado correctamente.
+            </p>
         {% endif %}
     </section>
 
+    <!-- Contador de tiempo -->
     <section class="panel timer-panel">
-        <h2> Tiempo de trabajo</h2>
+        <h2>Tiempo de trabajo</h2>
 
         <p class="muted" id="timer-message">
             {% if service.status == "en progreso" %}
@@ -186,125 +379,257 @@
         >00:00:00</div>
 
         {% if service.started_at %}
-        <p class="muted">
-            <strong>Inicio:</strong>
-            {{ service.started_at.strftime("%d/%m/%Y %H:%M:%S") }}
-        </p>
+            <p class="muted">
+                <strong>Inicio:</strong>
+                {{ service.started_at.strftime("%d/%m/%Y %H:%M:%S") }}
+            </p>
         {% endif %}
 
         {% if service.finished_at %}
-        <p class="muted">
-            <strong>Finalización:</strong>
-            {{ service.finished_at.strftime("%d/%m/%Y %H:%M:%S") }}
-        </p>
+            <p class="muted">
+                <strong>Finalización:</strong>
+                {{ service.finished_at.strftime("%d/%m/%Y %H:%M:%S") }}
+            </p>
         {% endif %}
 
         {% if service.status == "en progreso" %}
-        <div class="timer-actions">
-            <form action="/servicio/pausar" method="post">
-                <button class="warning" type="submit">Pausar contador</button>
-            </form>
-        </div>
+            <div class="timer-actions">
+                <form action="/servicio/pausar" method="post">
+                    <button class="warning" type="submit">
+                        Pausar contador
+                    </button>
+                </form>
+            </div>
+
         {% elif service.status == "pausado" %}
-        <div class="timer-actions">
-            <form action="/servicio/reanudar" method="post">
-                <button type="submit">Reanudar labores</button>
-            </form>
-        </div>
+            <div class="timer-actions">
+                <form action="/servicio/reanudar" method="post">
+                    <button type="submit">
+                        Reanudar labores
+                    </button>
+                </form>
+            </div>
         {% endif %}
     </section>
 
+    <!-- Tareas y barra de progreso -->
     <section class="panel">
         <h2>Tareas de limpieza</h2>
 
+        <!-- Resumen visual del avance -->
+        <div class="progress-panel">
+            <div class="progress-heading">
+                <h3>Avance del servicio</h3>
+
+                <span class="progress-percentage">
+                    {{ progress_percentage }}%
+                </span>
+            </div>
+
+            <div
+                class="progress-track"
+                role="progressbar"
+                aria-label="Avance de tareas completadas con fotografía"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="{{ progress_percentage }}"
+            >
+                <div
+                    class="progress-fill"
+                    style="width: {{ progress_percentage }}%;"
+                ></div>
+            </div>
+
+            <p class="progress-description">
+                <strong>{{ completed_tasks }} de {{ total_tasks }}</strong>
+                tareas completas con fotografía.
+            </p>
+
+            {% if total_tasks > 0 and completed_tasks == total_tasks %}
+                <p class="progress-description progress-complete">
+                    ✓ ¡Excelente! Todas las tareas tienen su fotografía.
+                </p>
+
+            {% elif total_tasks == 0 %}
+                <p class="progress-description">
+                    Aún no hay tareas registradas para este servicio.
+                </p>
+
+            {% else %}
+                <p class="progress-description">
+                    Faltan {{ total_tasks - completed_tasks }}
+                    tareas por completar con su fotografía.
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Listado de tareas -->
         {% for task in service.tasks %}
-        <div class="task-card">
-            <h3>{{ task.name }}</h3>
+            <div class="task-card">
+                <h3>{{ task.name }}</h3>
 
-            {% if task.is_completed and task.photo %}
-                <p class="success">✓ Tarea completada</p>
+                
+{% if task.is_completed and task.photo %}
+    <p class="success">✓ Tarea completada</p>
 
-                <div class="photo-evidence">
-                    <p><strong>Fotografía guardada:</strong></p>
+    <div class="photo-evidence">
+        <p><strong>Fotografía guardada:</strong></p>
 
-                    <img
-                        src="/servicio/fotografias/{{ task.photo.id }}"
-                        alt="Evidencia de {{ task.name }}"
-                    >
-
-                    <p class="photo-name">{{ task.photo.filename }}</p>
-                </div>
-            {% elif task.is_completed %}
-                <p>⚠️ La tarea está marcada como completada, pero no tiene fotografía registrada.</p>
-          
-{% else %}
-    <p> Tarea pendiente</p>
-
-    {% if service.status == "en progreso" %}
-    <form
-        action="/servicio/tareas/{{ task.id }}/completar"
-        method="post"
-        enctype="multipart/form-data"
-    >
-        <label for="photo-{{ task.id }}">
-            Selecciona la fotografía de evidencia:
-        </label>
-
-        <input
-            type="file"
-            id="photo-{{ task.id }}"
-            name="photo"
-            accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-            required
+        <img
+            src="/servicio/fotografias/{{ task.photo.id }}"
+            alt="Evidencia de {{ task.name }}"
+            loading="lazy"
         >
 
-        <button type="submit">
-            Subir evidencia y completar tarea
-        </button>
-    </form>
-    {% elif service.status == "pausado" %}
-    <p class="muted">
-        Reanuda las labores para poder subir esta evidencia.
-    </p>
-    {% endif %}
-{% endif %}
-
-        </div>
-        {% else %}
-        <p class="muted">Este servicio no tiene tareas registradas.</p>
-        {% endfor %}
-    </section>
+        <p class="photo-name">{{ task.photo.filename }}</p>
+    </div>
 
     {% if service.status == "en progreso" %}
-    <section class="panel">
-        <h2>Finalizar servicio</h2>
+        <form
+            class="task-form"
+            action="/servicio/tareas/{{ task.id }}/completar"
+            method="post"
+            enctype="multipart/form-data"
+        >
+            <label for="photo-{{ task.id }}">
+                Reemplazar fotografía de evidencia:
+            </label>
 
-        <p class="muted">
-            Solo podrás finalizar cuando todas las tareas estén completadas
-            y sus fotografías estén guardadas.
-        </p>
+            <input
+                type="file"
+                id="photo-{{ task.id }}"
+                name="photo"
+                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                required
+            >
 
-        <form action="/servicio/finalizar" method="post">
-            <button type="submit">Finalizar servicio</button>
+            <button type="submit">
+                Actualizar fotografía
+            </button>
         </form>
-    </section>
-    {% elif service.status == "pausado" %}
-    <section class="panel">
-        <h2>Servicio pausado</h2>
-        <p class="muted">
-            Reanuda las labores para continuar trabajando y finalizar el servicio.
-        </p>
-    </section>
     {% endif %}
 
-    {% else %}
-    <section class="panel">
-        <h2>Sin servicio asignado</h2>
-        <p>No tienes un servicio asignado actualmente.</p>
+{% if service.status == "en progreso" %}
+    <form
+        action="/servicio/tareas/{{ task.id }}/desmarcar"
+        method="post"
+        style="margin-top: 12px;"
+    >
+        <button type="submit" class="warning">
+            Marcar como pendiente
+        </button>
+    </form>
+{% endif %}
+
+
+                {% elif task.is_completed %}
+                    <p>
+                        ⚠️ La tarea está marcada como completada,
+                        pero no tiene fotografía registrada.
+                    </p>
+
+                {% else %}
+                    <p>Tarea pendiente.</p>
+
+                    {% if service.status == "en progreso" %}
+                        <form
+                            class="task-form"
+                            action="/servicio/tareas/{{ task.id }}/completar"
+                            method="post"
+                            enctype="multipart/form-data"
+                        >
+                            <label for="photo-{{ task.id }}">
+                                Selecciona la fotografía de evidencia:
+                            </label>
+
+                            <input
+                                type="file"
+                                id="photo-{{ task.id }}"
+                                name="photo"
+                                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
+                                required
+                            >
+
+                            <button type="submit">
+                                Subir evidencia y completar tarea
+                            </button>
+                        </form>
+
+                    {% elif service.status == "pausado" %}
+                        <p class="muted">
+                            Reanuda las labores para poder subir esta evidencia.
+                        </p>
+
+                    {% elif service.status == "pendiente" %}
+                        <p class="muted">
+                            Inicia las labores para completar esta tarea.
+                        </p>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+        {% else %}
+            <p class="muted">
+                Este servicio no tiene tareas registradas.
+            </p>
+        {% endfor %}
+
+        <!-- Finalizar servicio -->
+        {% if service.status == "en progreso" %}
+            <div class="finish-service">
+                <h3>Finalizar servicio</h3>
+
+                <p class="muted">
+                    Solo podrás finalizar cuando todas las tareas estén
+                    completadas y sus fotografías estén guardadas.
+                </p>
+
+                <form action="/servicio/finalizar" method="post">
+                    <button
+                        type="submit"
+                        {% if total_tasks == 0 or completed_tasks != total_tasks %}
+                            disabled
+                            title="Completa todas las tareas y adjunta sus fotografías."
+                        {% endif %}
+                    >
+                        Finalizar servicio
+                    </button>
+                </form>
+
+                {% if total_tasks == 0 or completed_tasks != total_tasks %}
+                    <p class="progress-description">
+                        Aún tienes tareas pendientes de completar con fotografía.
+                    </p>
+                {% endif %}
+            </div>
+
+        {% elif service.status == "pausado" %}
+            <div class="finish-service">
+                <h3>Servicio pausado</h3>
+
+                <p class="muted">
+                    Reanuda las labores para continuar trabajando y finalizar
+                    el servicio.
+                </p>
+            </div>
+        {% endif %}
     </section>
+
+    {% else %}
+
+        <!-- No hay servicio asignado -->
+        <section class="panel">
+            <h2>Sin servicio asignado</h2>
+
+            <p class="muted">
+                No tienes un servicio asignado actualmente.
+            </p>
+        </section>
+
     {% endif %}
 </div>
 
+<!-- Actualización del contador -->
 <script>
     const timer = document.getElementById("timer");
 
@@ -336,5 +661,6 @@
         }
     }
 </script>
+
 </body>
 </html>
