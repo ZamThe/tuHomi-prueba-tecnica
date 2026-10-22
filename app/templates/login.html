@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#5224a5">
+    <title>TuHomi | Iniciar sesión</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glass: rgba(255, 255, 255, 0.13);
+            --glass-border: rgba(255, 255, 255, 0.32);
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--white);
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(43, 12, 100, 0.20),
+                    rgba(92, 34, 175, 0.12)
+                ),
+                url("/static/images/tuhomi-background.png")
+                center / cover no-repeat fixed,
+                #5224a5;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            padding: 38px 34px 30px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.12);
+            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(20px);
+            box-shadow:
+                0 25px 70px rgba(25, 5, 70, 0.30),
+                inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        }
+
+        .brand-icon {
+            width: 62px;
+            height: 62px;
+            margin: 0 auto 8px;
+            display: grid;
+            place-items: center;
+            font-size: 42px;
+            filter: drop-shadow(0 3px 12px rgba(255,255,255,.25));
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 750;
+            letter-spacing: -1px;
+            text-shadow: 0 3px 15px rgba(35, 0, 80, .15);
+        }
+
+        .subtitle {
+            margin: 9px 0 30px;
+            color: rgba(255, 255, 255, .88);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .field {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .field-icon {
+            position: absolute;
+            top: 50%;
+            left: 17px;
+            transform: translateY(-50%);
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        .field input {
+            display: block;
+            width: 100%;
+            height: 53px;
+            padding: 0 18px 0 48px;
+            border: 1px solid rgba(255, 255, 255, .40);
+            border-radius: 30px;
+            outline: none;
+            color: white;
+            background: rgba(255, 255, 255, .10);
+            font: inherit;
+            font-size: 14px;
+            transition: border-color .2s, background .2s,
+                        box-shadow .2s;
+        }
+
+        .field input::placeholder {
+            color: rgba(255, 255, 255, .85);
+        }
+
+        .field input:focus {
+            border-color: rgba(255, 255, 255, .90);
+            background: rgba(255, 255, 255, .17);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, .10);
+        }
+
+        .login-button {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 8px;
+            border: 0;
+            border-radius: 30px;
+            color: #49208e;
+            background: #ffffff;
+            font: inherit;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 22px rgba(34, 5, 90, .18);
+            transition: transform .2s, background .2s;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            background: #f1eaff;
+        }
+
+        .login-button:focus-visible {
+            outline: 3px solid #ffffff;
+            outline-offset: 4px;
+        }
+
+        .error {
+            margin-bottom: 18px;
+            padding: 12px;
+            border: 1px solid rgba(255, 180, 190, .55);
+            border-radius: 12px;
+            color: white;
+            background: rgba(150, 20, 55, .35);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin: 24px 0 0;
+            color: rgba(255, 255, 255, .85);
+            font-size: 12px;
+            letter-spacing: .2px;
+        }
+
+        .footer::before,
+        .footer::after {
+            content: "";
+            display: inline-block;
+            width: 22px;
+            height: 1px;
+            margin: 0 10px 4px;
+            background: rgba(255, 255, 255, .55);
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 16px;
+                background-attachment: scroll;
+            }
+
+            .login-card {
+                padding: 30px 23px 26px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="login-card">
+        <div class="brand-icon" aria-hidden="true">⌂</div>
+
+        <h1>TuHomi</h1>
+
+        <p class="subtitle">
+            Gestión de servicios de limpieza
+        </p>
+
+        {% if error %}
+        <div class="error" role="alert">
+            Usuario o contraseña incorrectos. Inténtalo nuevamente.
+        </div>
+        {% endif %}
+
+        <form action="/login" method="post">
+            <div class="field">
+                <span class="field-icon" aria-hidden="true">♟</span>
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Usuario"
+                    autocomplete="username"
+                    aria-label="Usuario"
+                    required
+                    autofocus
+                >
+            </div>
+
+            <div class="field">
+                <span class="field-icon" aria-hidden="true">♙</span>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
+                    autocomplete="current-password"
+                    aria-label="Contraseña"
+                    required
+                >
+            </div>
+
+            <button class="login-button" type="submit">
+                Iniciar sesión
+            </button>
+        </form>
+
+        <p class="footer">Acceso para colaboradores</p>
+    </main>
+</body>
+</html>
