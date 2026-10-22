@@ -96,3 +96,59 @@ Este resultado corresponde a los escenarios cubiertos por las pruebas existentes
 ## 11. Estado de la entrega
 
 Proyecto desarrollado y probado localmente. Antes de la entrega definitiva se deben comprobar las dependencias, la configuración de ejecución, la inicialización de los datos y la ausencia de secretos o archivos privados innecesarios.
+
+## Administración de datos de prueba
+
+### 1. Activar el entorno virtual
+
+Desde la carpeta raíz del proyecto, ejecutar:
+
+```powershell
+.\venv313\Scripts\Activate.ps1
+```
+
+
+### 2. Crear una copia de seguridad de la base de datos
+
+Antes de eliminar información, detener el servidor y ejecutar:
+
+```powershell
+Copy-Item .\data\tuhomi.db .\data\tuhomi_backup.db
+```
+
+### 3. Eliminar los servicios existentes
+
+Ejecutar el script que elimina los servicios y sus tareas y fotografías relacionadas, conservando los usuarios:
+
+```powershell
+python .\scripts\limpiar_servicios.py
+```
+
+### 4. Asignar nuevos apartamentos a los usuarios
+
+Ejecutar el script de asignación de servicios:
+
+```powershell
+python .\scripts\asignar_servicios.py
+```
+
+Este script verifica los usuarios activos y, si no existen servicios, crea servicios de prueba para los dos usuarios, con sus respectivas tareas.
+
+### 5. Iniciar la aplicación
+
+```powershell
+python -m uvicorn app.main:app --reload
+```
+
+Abrir en el navegador:
+
+- Aplicación: http://127.0.0.1:8000
+- Documentación de la API: http://127.0.0.1:8000/docs
+- Estado del servicio: http://127.0.0.1:8000/health
+
+### Importante
+
+- Realizar una copia de seguridad antes de limpiar los datos.
+- Los usuarios se conservan; no es necesario crearlos nuevamente.
+- Verificar que los apartamentos y las tareas creadas correspondan a los datos de prueba deseados.
+- Los scripts deben ejecutarse desde la carpeta raíz del proyecto.
