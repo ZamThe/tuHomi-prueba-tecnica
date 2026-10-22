@@ -1,6 +1,6 @@
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -297,102 +297,98 @@
 </head>
 
 <body>
-<div class="container">
+    <div class="container">
 
-    <!-- Encabezado -->
-    <header>
-        <div>
-            <h1>TuHomi</h1>
-            <p class="muted">
-                Bienvenido/a, {{ user.full_name }}
+        <!-- Encabezado -->
+        <header>
+            <div>
+                <h1>TuHomi</h1>
+                <p class="muted">
+                    Bienvenido/a, {{ user.full_name }}
+                </p>
+            </div>
+
+            <form action="/logout" method="post">
+                <button class="secondary" type="submit">
+                    Cerrar sesión
+                </button>
+            </form>
+        </header>
+
+        {% if service %}
+
+        <!-- Información del servicio -->
+        <section class="panel">
+            <h2>Mi servicio de limpieza</h2>
+
+            <p>
+                <strong>Ubicación:</strong>
+                {{ service.apartment }}
             </p>
-        </div>
 
-        <form action="/logout" method="post">
-            <button class="secondary" type="submit">
-                Cerrar sesión
-            </button>
-        </form>
-    </header>
+            <p>
+                <strong>Fecha:</strong>
+                {{ service.scheduled_at.strftime("%d/%m/%Y %H:%M") }}
+            </p>
 
-    {% if service %}
+            <p>
+                <strong>Instrucciones:</strong>
+                {{ service.instructions or "Sin instrucciones adicionales" }}
+            </p>
 
-    <!-- Información del servicio -->
-    <section class="panel">
-        <h2>Mi servicio de limpieza</h2>
+            <p>
+                <strong>Estado:</strong>
+                <span class="status">{{ service.status }}</span>
+            </p>
 
-        <p>
-            <strong>Ubicación:</strong>
-            {{ service.apartment }}
-        </p>
-
-        <p>
-            <strong>Fecha:</strong>
-            {{ service.scheduled_at.strftime("%d/%m/%Y %H:%M") }}
-        </p>
-
-        <p>
-            <strong>Instrucciones:</strong>
-            {{ service.instructions or "Sin instrucciones adicionales" }}
-        </p>
-
-        <p>
-            <strong>Estado:</strong>
-            <span class="status">{{ service.status }}</span>
-        </p>
-
-        {% if service.status == "pendiente" %}
+            {% if service.status == "pendiente" %}
             <form action="/servicio/iniciar" method="post">
                 <button type="submit">
                     Iniciar labores
                 </button>
             </form>
 
-        {% elif service.status == "finalizado" %}
+            {% elif service.status == "finalizado" %}
             <p class="success">
                 ✓ Servicio finalizado correctamente.
             </p>
-        {% endif %}
-    </section>
-
-    <!-- Contador de tiempo -->
-    <section class="panel timer-panel">
-        <h2>Tiempo de trabajo</h2>
-
-        <p class="muted" id="timer-message">
-            {% if service.status == "en progreso" %}
-                El tiempo está corriendo.
-            {% elif service.status == "pausado" %}
-                El contador está pausado.
-            {% elif service.status == "finalizado" %}
-                Tiempo total registrado.
-            {% else %}
-                El contador comenzará al iniciar las labores.
             {% endif %}
-        </p>
+        </section>
 
-        <div
-            id="timer"
-            class="timer"
-            data-seconds="{{ timer_seconds }}"
-            data-running="{{ 'true' if service.status == 'en progreso' else 'false' }}"
-        >00:00:00</div>
+        <!-- Contador de tiempo -->
+        <section class="panel timer-panel">
+            <h2>Tiempo de trabajo</h2>
 
-        {% if service.started_at %}
+            <p class="muted" id="timer-message">
+                {% if service.status == "en progreso" %}
+                El tiempo está corriendo.
+                {% elif service.status == "pausado" %}
+                El contador está pausado.
+                {% elif service.status == "finalizado" %}
+                Tiempo total registrado.
+                {% else %}
+                El contador comenzará al iniciar las labores.
+                {% endif %}
+            </p>
+
+            <div id="timer" class="timer" data-seconds="{{ timer_seconds }}"
+                data-running="{{ 'true' if service.status == 'en progreso' else 'false' }}">00:00:00</div>
+
+            {% if service.started_at %}
             <p class="muted">
                 <strong>Inicio:</strong>
                 {{ service.started_at.strftime("%d/%m/%Y %H:%M:%S") }}
             </p>
-        {% endif %}
+            {% endif %}
 
-        {% if service.finished_at %}
+            {% if service.finished_at %}
             <p class="muted">
                 <strong>Finalización:</strong>
                 {{ service.finished_at.strftime("%d/%m/%Y %H:%M:%S") }}
             </p>
-        {% endif %}
+            {% endif %}
 
-        {% if service.status == "en progreso" %}
+            {% if service.status == "en progreso" %}
             <div class="timer-actions">
                 <form action="/servicio/pausar" method="post">
                     <button class="warning" type="submit">
@@ -401,7 +397,7 @@
                 </form>
             </div>
 
-        {% elif service.status == "pausado" %}
+            {% elif service.status == "pausado" %}
             <div class="timer-actions">
                 <form action="/servicio/reanudar" method="post">
                     <button type="submit">
@@ -409,173 +405,139 @@
                     </button>
                 </form>
             </div>
-        {% endif %}
-    </section>
+            {% endif %}
+        </section>
 
-    <!-- Tareas y barra de progreso -->
-    <section class="panel">
-        <h2>Tareas de limpieza</h2>
+        <!-- Tareas y barra de progreso -->
+        <section class="panel">
+            <h2>Tareas de limpieza</h2>
 
-        <!-- Resumen visual del avance -->
-        <div class="progress-panel">
-            <div class="progress-heading">
-                <h3>Avance del servicio</h3>
+            <!-- Resumen visual del avance -->
+            <div class="progress-panel">
+                <div class="progress-heading">
+                    <h3>Avance del servicio</h3>
 
-                <span class="progress-percentage">
-                    {{ progress_percentage }}%
-                </span>
-            </div>
+                    <span class="progress-percentage">
+                        {{ progress_percentage }}%
+                    </span>
+                </div>
 
-            <div
-                class="progress-track"
-                role="progressbar"
-                aria-label="Avance de tareas completadas con fotografía"
-                aria-valuemin="0"
-                aria-valuemax="100"
-                aria-valuenow="{{ progress_percentage }}"
-            >
-                <div
-                    class="progress-fill"
-                    style="width: {{ progress_percentage }}%;"
-                ></div>
-            </div>
+                <div class="progress-track" role="progressbar" aria-label="Avance de tareas completadas con fotografía"
+                    aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ progress_percentage }}">
+                    <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
+                </div>
 
-            <p class="progress-description">
-                <strong>{{ completed_tasks }} de {{ total_tasks }}</strong>
-                tareas completas con fotografía.
-            </p>
+                <p class="progress-description">
+                    <strong>{{ completed_tasks }} de {{ total_tasks }}</strong>
+                    tareas completas con fotografía.
+                </p>
 
-            {% if total_tasks > 0 and completed_tasks == total_tasks %}
+                {% if total_tasks > 0 and completed_tasks == total_tasks %}
                 <p class="progress-description progress-complete">
                     ✓ ¡Excelente! Todas las tareas tienen su fotografía.
                 </p>
 
-            {% elif total_tasks == 0 %}
+                {% elif total_tasks == 0 %}
                 <p class="progress-description">
                     Aún no hay tareas registradas para este servicio.
                 </p>
 
-            {% else %}
+                {% else %}
                 <p class="progress-description">
                     Faltan {{ total_tasks - completed_tasks }}
                     tareas por completar con su fotografía.
                 </p>
-            {% endif %}
-        </div>
-
-        <!-- Listado de tareas -->
-        {% for task in service.tasks %}
-            <div class="task-card">
-                <h3>{{ task.name }}</h3>
-
-                
-{% if task.is_completed and task.photo %}
-    <p class="success">✓ Tarea completada</p>
-
-    <div class="photo-evidence">
-        <p><strong>Fotografía guardada:</strong></p>
-
-        <img
-            src="/servicio/fotografias/{{ task.photo.id }}"
-            alt="Evidencia de {{ task.name }}"
-            loading="lazy"
-        >
-
-        <p class="photo-name">{{ task.photo.filename }}</p>
-    </div>
-
-    {% if service.status == "en progreso" %}
-        <form
-            class="task-form"
-            action="/servicio/tareas/{{ task.id }}/completar"
-            method="post"
-            enctype="multipart/form-data"
-        >
-            <label for="photo-{{ task.id }}">
-                Reemplazar fotografía de evidencia:
-            </label>
-
-            <input
-                type="file"
-                id="photo-{{ task.id }}"
-                name="photo"
-                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-                required
-            >
-
-            <button type="submit">
-                Actualizar fotografía
-            </button>
-        </form>
-    {% endif %}
-
-{% if service.status == "en progreso" %}
-    <form
-        action="/servicio/tareas/{{ task.id }}/desmarcar"
-        method="post"
-        style="margin-top: 12px;"
-    >
-        <button type="submit" class="warning">
-            Marcar como pendiente
-        </button>
-    </form>
-{% endif %}
-
-
-                {% elif task.is_completed %}
-                    <p>
-                        ⚠️ La tarea está marcada como completada,
-                        pero no tiene fotografía registrada.
-                    </p>
-
-                {% else %}
-                    <p>Tarea pendiente.</p>
-
-                    {% if service.status == "en progreso" %}
-                        <form
-                            class="task-form"
-                            action="/servicio/tareas/{{ task.id }}/completar"
-                            method="post"
-                            enctype="multipart/form-data"
-                        >
-                            <label for="photo-{{ task.id }}">
-                                Selecciona la fotografía de evidencia:
-                            </label>
-
-                            <input
-                                type="file"
-                                id="photo-{{ task.id }}"
-                                name="photo"
-                                accept="image/jpeg,image/png,.jpg,.jpeg,.png"
-                                required
-                            >
-
-                            <button type="submit">
-                                Subir evidencia y completar tarea
-                            </button>
-                        </form>
-
-                    {% elif service.status == "pausado" %}
-                        <p class="muted">
-                            Reanuda las labores para poder subir esta evidencia.
-                        </p>
-
-                    {% elif service.status == "pendiente" %}
-                        <p class="muted">
-                            Inicia las labores para completar esta tarea.
-                        </p>
-                    {% endif %}
                 {% endif %}
             </div>
 
-        {% else %}
+            <!-- Listado de tareas -->
+            {% for task in service.tasks %}
+            <div class="task-card">
+                <h3>{{ task.name }}</h3>
+
+
+                {% if task.is_completed and task.photo %}
+                <p class="success">✓ Tarea completada</p>
+
+                <div class="photo-evidence">
+                    <p><strong>Fotografía guardada:</strong></p>
+
+                    <img src="/servicio/fotografias/{{ task.photo.id }}" alt="Evidencia de {{ task.name }}"
+                        loading="lazy">
+
+                    <p class="photo-name">{{ task.photo.filename }}</p>
+                </div>
+
+                {% if service.status == "en progreso" %}
+                <form class="task-form" action="/servicio/tareas/{{ task.id }}/completar" method="post"
+                    enctype="multipart/form-data">
+                    <label for="photo-{{ task.id }}">
+                        Reemplazar fotografía de evidencia:
+                    </label>
+
+                    <input type="file" id="photo-{{ task.id }}" name="photo"
+                        accept="image/jpeg,image/png,.jpg,.jpeg,.png" required>
+
+                    <button type="submit">
+                        Actualizar fotografía
+                    </button>
+                </form>
+                {% endif %}
+
+                {% if service.status == "en progreso" %}
+                <form action="/servicio/tareas/{{ task.id }}/desmarcar" method="post" style="margin-top: 12px;">
+                    <button type="submit" class="warning">
+                        Marcar como pendiente
+                    </button>
+                </form>
+                {% endif %}
+
+
+                {% elif task.is_completed %}
+                <p>
+                    ⚠️ La tarea está marcada como completada,
+                    pero no tiene fotografía registrada.
+                </p>
+
+                {% else %}
+                <p>Tarea pendiente.</p>
+
+                {% if service.status == "en progreso" %}
+                <form class="task-form" action="/servicio/tareas/{{ task.id }}/completar" method="post"
+                    enctype="multipart/form-data">
+                    <label for="photo-{{ task.id }}">
+                        Selecciona la fotografía de evidencia:
+                    </label>
+
+                    <input type="file" id="photo-{{ task.id }}" name="photo"
+                        accept="image/jpeg,image/png,.jpg,.jpeg,.png" required>
+
+                    <button type="submit">
+                        Subir evidencia y completar tarea
+                    </button>
+                </form>
+
+                {% elif service.status == "pausado" %}
+                <p class="muted">
+                    Reanuda las labores para poder subir esta evidencia.
+                </p>
+
+                {% elif service.status == "pendiente" %}
+                <p class="muted">
+                    Inicia las labores para completar esta tarea.
+                </p>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            {% else %}
             <p class="muted">
                 Este servicio no tiene tareas registradas.
             </p>
-        {% endfor %}
+            {% endfor %}
 
-        <!-- Finalizar servicio -->
-        {% if service.status == "en progreso" %}
+            <!-- Finalizar servicio -->
+            {% if service.status == "en progreso" %}
             <div class="finish-service">
                 <h3>Finalizar servicio</h3>
 
@@ -585,25 +547,20 @@
                 </p>
 
                 <form action="/servicio/finalizar" method="post">
-                    <button
-                        type="submit"
-                        {% if total_tasks == 0 or completed_tasks != total_tasks %}
-                            disabled
-                            title="Completa todas las tareas y adjunta sus fotografías."
-                        {% endif %}
-                    >
+                    <button type="submit" {% if total_tasks==0 or completed_tasks !=total_tasks %} disabled
+                        title="Completa todas las tareas y adjunta sus fotografías." {% endif %}>
                         Finalizar servicio
                     </button>
                 </form>
 
                 {% if total_tasks == 0 or completed_tasks != total_tasks %}
-                    <p class="progress-description">
-                        Aún tienes tareas pendientes de completar con fotografía.
-                    </p>
+                <p class="progress-description">
+                    Aún tienes tareas pendientes de completar con fotografía.
+                </p>
                 {% endif %}
             </div>
 
-        {% elif service.status == "pausado" %}
+            {% elif service.status == "pausado" %}
             <div class="finish-service">
                 <h3>Servicio pausado</h3>
 
@@ -612,10 +569,10 @@
                     el servicio.
                 </p>
             </div>
-        {% endif %}
-    </section>
+            {% endif %}
+        </section>
 
-    {% else %}
+        {% else %}
 
         <!-- No hay servicio asignado -->
         <section class="panel">
@@ -626,41 +583,42 @@
             </p>
         </section>
 
-    {% endif %}
-</div>
+        {% endif %}
+    </div>
 
-<!-- Actualización del contador -->
-<script>
-    const timer = document.getElementById("timer");
+    <!-- Actualización del contador -->
+    <script>
+        const timer = document.getElementById("timer");
 
-    if (timer) {
-        let elapsedSeconds = Number(timer.dataset.seconds || 0);
-        const isRunning = timer.dataset.running === "true";
+        if (timer) {
+            let elapsedSeconds = Number(timer.dataset.seconds || 0);
+            const isRunning = timer.dataset.running === "true";
 
-        function formatTime(totalSeconds) {
-            const hours = Math.floor(totalSeconds / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
+            function formatTime(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
 
-            return [hours, minutes, seconds]
-                .map(value => String(value).padStart(2, "0"))
-                .join(":");
+                return [hours, minutes, seconds]
+                    .map(value => String(value).padStart(2, "0"))
+                    .join(":");
+            }
+
+            function updateTimer() {
+                timer.textContent = formatTime(elapsedSeconds);
+            }
+
+            updateTimer();
+
+            if (isRunning) {
+                setInterval(() => {
+                    elapsedSeconds += 1;
+                    updateTimer();
+                }, 1000);
+            }
         }
-
-        function updateTimer() {
-            timer.textContent = formatTime(elapsedSeconds);
-        }
-
-        updateTimer();
-
-        if (isRunning) {
-            setInterval(() => {
-                elapsedSeconds += 1;
-                updateTimer();
-            }, 1000);
-        }
-    }
-</script>
+    </script>
 
 </body>
+
 </html>
